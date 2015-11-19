@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <title>pictureman</title>
+</head>
+
+<body>
+    <div class="panel">
+        <input type="file" id="updatedFile" onchange="loadImg(this)" />
+        <img id="imgContainer" src="../asserts/imgs/film.jpg" alt="sampe picture" />
+    </div>
+</body>
+<script type="text/javascript">
+function loadImg(fileinput) {
+    var file = fileinput.files[0];
+    if (!/image\/\w+/.test(file.type)) {
+        alert("please pick image!");
+        return false;
+    }
+    var fr = new FileReader();
+    fr.readAsDataURL(file);
+    fr.addEventListener('load', function(e) {
+        var imgContainer = document.getElementById("imgContainer");
+        imgContainer.src = e.target.result;
+    });
+}
+</script>
+
+</html>
