@@ -78,21 +78,8 @@
     </div>
 </body>
 <script type="text/javascript">
-function getByClass(oParent, sClass) {
-    var aEle = oParent.getElementsByTagName('*');
-    var aResult = [];
-    var re = new RegExp('\\b' + sClass + '\\b', 'i');
-    var i = 0;
 
-    for (i = 0; i < aEle.length; i++) {
-        if (re.test(aEle[i].className)) {
-            aResult.push(aEle[i]);
-        }
-    }
-
-    return aResult;
-}
-
+// util function
 function getByAttr(oParent, attrName, attrVal) {
     var aEle = oParent.getElementsByTagName('*');
     var aResult = [];
@@ -109,48 +96,60 @@ function getByAttr(oParent, attrName, attrVal) {
 }
 
 
-var tabs = getByClass(document, 'tabs')[0];
-var headers = getByClass(tabs, 'headers')[0].getElementsByTagName('span');
-var pads = getByClass(tabs, 'pads')[0];
-var mapping = {};
-//console.log(pads.innerHTML);
-var h_length = headers.length;
+function tabsMaker(){}
 
-for (var i = 0; i < h_length; i++) {
+tabsMaker.prototype.init = function(){
+    var self = this;
+    var tabs = getByAttr(document,'class' ,'tabs')[0];
+    var headers = getByAttr(tabs,'class', 'headers')[0].getElementsByTagName('span');
+    var pads = getByAttr(tabs, 'class','pads')[0];
+
+    this.pairs = {};
+    var h_length = headers.length;
+
+    for (var i = 0; i < h_length; i++) {
     var header = headers[i];
     //get ref attr
     var ref = header.getAttribute('name');
     //get corresponding pad
     var pad = getByAttr(pads, 'ref', ref)[0];
 
-    mapping[ref] = {
-        header: header,
-        pad: pad
-    };
+    this.pairs[ref] = {
+            header: header,
+            pad: pad
+        };
+
+    self.addTabHandler(this.pairs[ref],ref);
+
+    }
+
 }
 
-function addClickListener(refSet,ref) {
+
+tabsMaker.prototype.addTabHandler = function(refSet,ref){
+    var self = this;
     refSet.header.addEventListener('click', function() {
-        if(!refSet.pad) return;
-        var style = refSet.pad.style;
-        style.display = 'inline-block';
-        hideOther(ref,mapping);
+            if(!refSet.pad) return;
+            var style = refSet.pad.style;
+            style.display = 'inline-block';
+            self.hideAll(ref);
     });
 }
 
-function hideOther(escape,mapping){
-    for(var ref in mapping){
+tabsMaker.prototype.hideAll = function(escape){
+    var self = this;
+    var pairs = self.pairs;
+    for(var ref in pairs){
         if(ref == escape){
             continue;
         }
-        if(!mapping[ref].pad) continue;
-        mapping[ref].pad.style.display = 'none';
+        if(!pairs[ref].pad) continue;
+        pairs[ref].pad.style.display = 'none';
     }
 }
 
-for (var ref in mapping) {
-    addClickListener(mapping[ref],ref);
-}
+var tbObj = new tabsMaker();
+tbObj.init();
 
 </script>
 
