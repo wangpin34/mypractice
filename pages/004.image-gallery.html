@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="application-name" content="snow white">
+<meta name="generator" content="wang pin">
+<meta name="description" content="Free Web tutorials">
+<meta name="keywords" content="HTML,CSS,XML,JavaScript">
+<meta name="author" content="wang pin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--HTML4 charset def-->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!--HTML5 charset def-->
+<meta charset="UTF-8">
+<link rel="icon" href="/assets/icon.ico" type="image/x-icon">
+<title>image gallery</title>
+<style>
+ body {
+  margin: 0; /* Remove default margin */
+ }
+
+ .middle {
+   margin: 300px auto;
+ }
+
+ .image-gallery {
+  position: relative;
+  background-color: brown;
+  width: 500px;
+  height: 200px;
+  text-align: center;
+  overflow: hidden;
+ }
+
+ .image-gallery img.item {
+   height: 100%;
+   display: inline-block;
+   margin: 0 auto;
+ }
+
+.image-gallery img.item.left-out {
+   animation: left-out 0.5s ease-out;
+ }
+
+ .image-gallery img.item.left-in {
+   animation: left-in 0.5s ease-out;
+ }
+
+ .image-gallery img.item.right-in {
+   animation: right-in 0.5s ease-out;
+ }
+
+.image-gallery img.item.right-out {
+   animation: right-out 0.5s ease-out;
+ }   
+
+
+ .image-gallery .icon.arrow {
+   width: 34px;
+   height: 100%;
+   cursor: pointer;
+   display: inline-block;
+   background-size: 34px 34px;
+   background-position: center;
+   background-repeat: no-repeat;
+   background-clip: content-box;
+   opacity: 0.5;
+   position: absolute;
+ }
+
+ .image-gallery .icon.arrow:hover {
+   opacity: 1;
+ }
+ .image-gallery .icon.arrow.left {
+   left: 0;
+   background-image: url(../assets/images/icons/leftArrow.png);
+ }
+
+ .image-gallery .icon.arrow.right {
+   right: 0;
+   background-image: url(../assets/images/icons/rightArrow.png);
+ }
+
+
+
+ @keyframes left-out {
+   from {
+     opacity: 1;
+     position: relative;
+     right: 0;
+   }
+   to {
+     opacity: 0;
+     position: relative;
+     right: 100%;
+     display: none;
+   }
+ }
+
+ @keyframes right-in {
+   from {
+     display: inline-block;
+     opacity: 0;
+     position: relative;
+     left: 100%;
+   }
+   to {
+     display: inline-block;
+     opacity: 1;
+     position: relative;
+     left: 0;
+   }
+ }
+
+ @keyframes left-in {
+   from {
+     display: inline-block;
+     opacity: 0;
+     position: relative;
+     right: 100%;
+   }
+   to {
+     display: inline-block;
+     opacity: 1;
+     position: relative;
+     right: 0;
+   }
+ }
+
+ @keyframes right-out {
+  from {
+     opacity: 1;
+     position: relative;
+     left: 0;
+   }
+   to {
+     opacity: 0;
+     position: relative;
+     left: 100%;
+     display: none;
+   }
+ }
+
+</style>
+</head>
+<body>
+    <div id="container" class="image-gallery middle">
+
+    </div>
+</body>
+<script type="text/javascript" src="./src/utils.js"></script>
+<script type="text/javascript">
+
+  disableTextSelection(document);
+
+
+ function Gallery(container, images){
+  
+  this.container = container;
+  this.images = images;
+  var imageElements = this.imageElements = [];
+
+  if(container.tagName.toLowerCase() !== 'div'){
+    throw new Error('Please us block element as a container');
+  }
+
+  var leftArrow = document.createElement('span');
+  leftArrow.setAttribute('class', 'icon arrow left');
+  var rightArrow = document.createElement('span');
+  rightArrow.setAttribute('class', 'icon arrow right');
+
+  container.appendChild(leftArrow);
+  
+
+  images && images instanceof Array && images.forEach(function(src, index){
+    var imageElement = document.createElement('img');
+    imageElement.setAttribute('class', 'item');
+    imageElement.setAttribute('src', src);
+    imageElement.style.display = 'inline-block';
+    if(index > 0){
+      imageElement.style.display = 'none';
+    }
+    imageElements.push(imageElement);
+    container.appendChild(imageElement);
+  })
+
+  container.appendChild(rightArrow);
+
+  if(typeof Gallery._initialized == "undefined"){
+
+    Gallery._initialized = true;
+    
+    Gallery.prototype.next = function(){
+      var length = imageElements.length;
+      var current = null;
+      var nextIndex = 0;
+      var next = null;
+      for(var i = 0; i < length; i++){
+        current = imageElements[i];
+        if(current.style.display === 'inline-block'){
+    
+          addClassToElement(current, 'left-out');
+
+          //Show next image
+          nextIndex = i + 1;
+          if(nextIndex + 1 > length){
+            nextIndex = 0;
+          }
+          next = imageElements[nextIndex];
+        
+          setTimeout(function(){
+            addClassToElement(next, 'right-in');
+            next.style.display = 'inline-block';
+          }, 200)
+
+          setTimeout(function(){
+            current.style.display = 'none';
+            removeClassFromElement(current, 'left-out');
+          }, 500);
+          setTimeout(function(){
+            removeClassFromElement(next, 'right-in');
+          }, 700);
+          
+          break;
+        }
+      }
+    }
+
+    Gallery.prototype.previous = function(){
+      var length = imageElements.length;
+      var current = null;
+      var nextIndex = 0;
+      var next = null;
+      for(var i = 0; i < length; i++){
+        current = imageElements[i];
+        if(current.style.display === 'inline-block'){
+        
+          addClassToElement(current, 'right-out');
+
+          //Show previous image
+          nextIndex = i - 1;
+          if(nextIndex < 0){
+            nextIndex = length - 1;
+          }
+          next = imageElements[nextIndex];
+
+          setTimeout(function(){
+            addClassToElement(next, 'left-in');
+            next.style.display = 'inline-block';
+          }, 200)
+
+          setTimeout(function(){
+            current.style.display = 'none';
+            removeClassFromElement(current, 'right-out');
+          }, 500);
+          setTimeout(function(){
+            removeClassFromElement(next, 'left-in');
+          }, 700);
+
+          break;
+        }
+      }
+    }
+  }
+
+  addListener(leftArrow, 'click', this.previous);
+  addListener(rightArrow, 'click', this.next);
+
+ }
+
+ document.addEventListener('DOMContentLoaded', function(){
+  var container = document.getElementById('container');
+  var gallery = new Gallery(container, [
+    '../assets/images/film.jpg',
+    '../assets/images/luobin.jpg',
+    '../assets/images/3.jpg',
+    '../assets/images/6.png'
+  ]);
+ })
+</script>
+</html>
