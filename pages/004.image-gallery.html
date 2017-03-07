@@ -159,8 +159,8 @@
   this.images = images;
   var imageElements = this.imageElements = [];
 
-  if(container.tagName.toLowerCase() !== 'div'){
-    throw new Error('Please us block element as a container');
+  if(!isElement(container) || container.tagName.toLowerCase() !== 'div'){
+    throw new Error('Please provide a valid block element like div, section etc');
   }
 
   var leftArrow = document.createElement('span');

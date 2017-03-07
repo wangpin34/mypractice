@@ -48,11 +48,24 @@ function disableTextSelection(dom){
   }
 }
 
+/**
+ * Check if element is a html element
+ * @param {*} element 
+ */
+function isElement(element){
+  if(element && element instanceof HTMLElement){
+    return true;
+  }
+  return false;
+}
 
 /**
  * Add class to html element
  */
 function addClassToElement(element){
+  if(!isElement(element)){
+    throw new Error('Not a valid html element');
+  }
   var classes = [];
   if(arguments.length > 1){
     classes = Array.prototype.slice.call(arguments, 1);
@@ -63,9 +76,12 @@ function addClassToElement(element){
 }
 
 /**
- * Remove class to html element
+ * Remove class from html element
  */
 function removeClassFromElement(element){
+  if(!isElement(element)){
+    throw new Error('Not a valid html element');
+  }
   var classes = [];
   if(arguments.length > 1){
     classes = Array.prototype.slice.call(arguments, 1);
