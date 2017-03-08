@@ -15,16 +15,23 @@ function getByAttr(oParent, attrName, attrVal) {
 
 
 function addListener(element, eType, listener, useCapture){
-  if(!element) throw new Error('No element provided');
+  // if(!element) throw new Error('No element provided');
 
   if(element.addEventListener){
-    element.addEventListener(eType, function(event){
-     listener&&listener(event||window.event);
-    }, useCapture)
+    element.addEventListener(eType, listener);
   }else{
-    element.attach('on' + eType, function(event){
-     listener&&listener(event||window.event)
-    })
+    element.attach('on' + eType, listener)
+  }
+}
+
+function removeListener(element, eType, listener){
+  // if(!isElement(element)){
+  //    throw new Error('Not a valid html element');
+  // }
+  if(element.removeEventListener){
+    element.removeEventListener(eType, listener);
+  }else{
+    element.detachEvent('on' + eType, listener);
   }
 }
 

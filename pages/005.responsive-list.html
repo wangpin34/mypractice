@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="application-name" content="snow white">
+<meta name="generator" content="wang pin">
+<meta name="description" content="Free Web tutorials">
+<meta name="keywords" content="HTML,CSS,XML,JavaScript">
+<meta name="author" content="wang pin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--HTML4 charset def-->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!--HTML5 charset def-->
+<meta charset="UTF-8">
+<link rel="icon" href="/assets/icon.ico" type="image/x-icon">
+<title>responsive list</title>
+<style>
+ body {
+  margin: 0; /* Remove default margin */
+ }
+
+ .middle {
+   margin: 300px auto;
+ }
+
+ #container {
+  width: 800px;
+  height: 100px;
+ }
+
+ .list-container {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  height: 100px;
+  width: 700px;
+  transition: width 0.4s ease-out;
+ }
+
+ .list-container.sorting {
+   width: 560px;
+ }
+
+ .list-container .item {
+   width: 100px;
+   height: 100px;
+   border-radius: 100%;
+   float: left;
+   list-style: none;
+   margin: 0 20px;
+
+   line-height: 100px;
+   text-align: center;
+   vertical-align: middle;
+   color: #ffffff;
+ }
+ 
+
+</style>
+</head>
+<body>
+    <div id="container" class="middle">
+      <ul class="list-container">
+        <li class="item" style="background-color:#F44336;" draggable="true">1</li>
+        <li class="item" style="background-color:#E91E63;" draggable="true">2</li>
+        <li class="item" style="background-color:#9C27B0;" draggable="true">3</li>
+        <li class="item" style="background-color:#3F51B5;" draggable="true">4</li>
+        <li class="item" style="background-color:#009688;" draggable="true">5</li>
+      </ul>
+    </div>
+</body>
+<script type="text/javascript" src="./src/utils.js"></script>
+<script type="text/javascript">
+  
+  var list = document.querySelector('.list-container');
+
+  addListener(list, 'dragstart', function(event){
+    event.preventDefault();//By default the element will be dragged
+    var listContainer = list;
+    var target = event.srcElement || event.target;
+    var width = target.clientWidth;
+    var height = target.clientHeight;
+    target.style.position = 'fixed';
+    addClassToElement(list, 'sorting');
+    setTimeout(function(){
+      removeClassFromElement(list, 'sorting');
+    }, 400);
+
+    var followMouseMove = function(event){
+      //The x and y is the cursor coordinates that is the middle of the item
+      target.style.left = (event.x - width/2) + 'px';
+      target.style.top = (event.y - height/2) + 'px';
+    }
+
+    var removeFollowMouse = function(){
+      //Remove the listener at the very beginning to avoid copy listeners by Node.cloneNode.
+      removeListener(document, 'mousemove', followMouseMove);
+      removeListener(document, 'mouseup', removeFollowMouse);
+      removeListener(document, 'drop', removeFollowMouse);
+
+      //Need to refresh items
+      var items = document.querySelectorAll('.list-container .item');
+
+      var otherItems = Array.prototype.filter.call(items, function(item){
+        return item !== target;
+      });
+
+      //The left boundary of the item
+      //A fixed(postion:fixed) element has no valid getBoundingClientRect result, actually they are all zero.
+      var left = parseInt(target.style.left);
+      var middleOfTarget = left + parseInt(target.clientWidth)/2;
+
+      //A clear copy without event listener and styles
+      var copy = target.cloneNode(true);
+      copy.style.position = '';
+      copy.style.top = '';
+      copy.style.left = '';
+
+      for(var i = 0; i < otherItems.length; i++){
+        var item = otherItems[i];
+        var rectangle = item.getBoundingClientRect();
+        
+        //Append to tail at the last item
+        if(i === (otherItems.length - 1)){
+          listContainer.appendChild(copy);
+          break;
+        }
+
+        //Insert to the head when target is left aside the first item
+        if(i === 0 && left < rectangle.left){
+          listContainer.insertBefore(copy, item);
+          break;
+        }
+
+        var nextItem = otherItems[i + 1];
+        var nextRectangle = nextItem.getBoundingClientRect();
+        var middleOfNext = nextRectangle.left + nextRectangle.width/2;
+        var middleOfCurrent = rectangle.left + rectangle.width/2;
+
+        if(middleOfTarget >= middleOfCurrent && middleOfTarget <= middleOfNext){
+          listContainer.insertBefore(copy, nextItem);
+          break;
+        }
+      }
+
+      target.parentNode.removeChild(target);
+    
+    }
+
+    addListener(document, 'mousemove', followMouseMove);
+    addListener(document, 'mouseup', removeFollowMouse);
+    addListener(document, 'drop', removeFollowMouse);
+
+    return false;
+  })
+</script>
+</html>
