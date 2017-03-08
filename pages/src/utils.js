@@ -13,26 +13,62 @@ function getByAttr(oParent, attrName, attrVal) {
     return aResult;
 }
 
-
-function addListener(element, eType, listener, useCapture){
-  // if(!element) throw new Error('No element provided');
-
-  if(element.addEventListener){
-    element.addEventListener(eType, listener);
-  }else{
-    element.attach('on' + eType, listener)
+/**
+ * Check if an object is a html element
+ * @param {Object} element 
+ */
+function isElement(element){
+  if(element && element instanceof HTMLElement){
+    return true;
   }
+  return false;
 }
 
+/**
+ * Add event listener to element
+ * @param {HTMLElement} element 
+ * @param {String} eType 
+ * @param {Function} listener 
+ * @param {Boolean} useCapture 
+ * 
+ * @return {Function} added listener function
+ */
+function addListener(element, eType, listener, useCapture){
+  if(!isElement(element) && element !== document){
+    throw new Error('No element provided');
+  } 
+
+  var wrapperListener = function(){
+    var event = arguments[0] || window.event;
+    listener(event);
+  };
+
+  if(element.addEventListener){
+    element.addEventListener(eType, wrapperListener, useCapture);
+  }else{
+    element.attach('on' + eType, wrapperListener)
+  }
+  return wrapperListener;
+}
+
+/**
+ * Remove event listener from element
+ * @param {HTMLElement} element 
+ * @param {String} eType 
+ * @param {Function} listener 
+ * 
+ * @return {void}
+ */
 function removeListener(element, eType, listener){
-  // if(!isElement(element)){
-  //    throw new Error('Not a valid html element');
-  // }
+  if(!isElement(element) && element !== document){
+    throw new Error('No element provided');
+  } 
   if(element.removeEventListener){
     element.removeEventListener(eType, listener);
   }else{
     element.detachEvent('on' + eType, listener);
   }
+  return;
 }
 
 /*
@@ -40,30 +76,13 @@ function removeListener(element, eType, listener){
  * @dom html element
  */
 function disableTextSelection(dom){
-  if(dom.addEventListener){
-    dom.addEventListener('mousedown', function(event){
-      event.stopPropagation();
-      event.preventDefault();    
-    })
-  }else{
-    dom.attach('onmousedown', function(){
-      var event = window.event;
-      event.cancelBubble = true;
-      event.returnValue = false;
-      return false;
-    })
-  }
-}
-
-/**
- * Check if element is a html element
- * @param {*} element 
- */
-function isElement(element){
-  if(element && element instanceof HTMLElement){
-    return true;
-  }
-  return false;
+  return addListener(dom, 'mousedown', function(event){
+    event.stopPropagation && event.stopPropagation();
+    event.preventDefault && event.preventDefault();
+    event.cancelBubble = true;
+    event.returnValue = false;
+    return false;
+  })
 }
 
 /**

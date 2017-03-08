@@ -96,7 +96,6 @@
       //Remove the listener at the very beginning to avoid copy listeners by Node.cloneNode.
       removeListener(document, 'mousemove', followMouseMove);
       removeListener(document, 'mouseup', removeFollowMouse);
-      removeListener(document, 'drop', removeFollowMouse);
 
       //Need to refresh items
       var items = document.querySelectorAll('.list-container .item');
@@ -144,12 +143,10 @@
       }
 
       target.parentNode.removeChild(target);
-    
     }
 
-    addListener(document, 'mousemove', followMouseMove);
-    addListener(document, 'mouseup', removeFollowMouse);
-    addListener(document, 'drop', removeFollowMouse);
+    followMouseMove = addListener(document, 'mousemove', followMouseMove);
+    removeFollowMouse = addListener(document, 'mouseup', removeFollowMouse);
 
     return false;
   })
