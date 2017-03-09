@@ -170,9 +170,9 @@
           timerForInsertEmptyHolder || clearTimeout(timerForInsertEmptyHolder);
           if(targetPosition !== 0){
             targetPosition = 0;
-
+            removeClassFromElement(emptyholder, 'fadein');
+            emptyholder.parentNode && emptyholder.parentNode.removeChild(emptyholder);
             timerForInsertEmptyHolder = setTimeout(function(){
-              removeClassFromElement(emptyholder, 'fadein');
               listContainer.insertBefore(emptyholder, item);
               addClassToElement(emptyholder, 'fadein');
             }, timerForInsertEmptyHolderTimeout);
@@ -190,9 +190,9 @@
           timerForInsertEmptyHolder || clearTimeout(timerForInsertEmptyHolder);
           if(targetPosition !== (i + 1)){
             targetPosition = i + 1;
-
+            removeClassFromElement(emptyholder, 'fadein');
+            emptyholder.parentNode && emptyholder.parentNode.removeChild(emptyholder);
             timerForInsertEmptyHolder = setTimeout(function(){
-              removeClassFromElement(emptyholder, 'fadein');
               listContainer.insertBefore(emptyholder, nextItem);
               addClassToElement(emptyholder, 'fadein');
             }, timerForInsertEmptyHolderTimeout);
@@ -257,8 +257,12 @@
       target.parentNode.removeChild(target);
       emptyholder.parentNode && emptyholder.parentNode.removeChild(emptyholder);
       addClassToElement(placeholder, 'fadeout');
+      timerForInsertEmptyHolder || clearTimeout(timerForInsertEmptyHolder);
       setTimeout(function(){
         placeholder.parentNode.removeChild(placeholder);
+        Array.prototype.map.call(document.querySelectorAll('.holder'), function(holder){
+          holder.parentNode && holder.parentNode.removeChild(holder);
+        })
       }, 250)
       
     }
