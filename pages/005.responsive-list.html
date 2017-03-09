@@ -33,12 +33,12 @@
   padding: 0;
   position: relative;
   height: 100px;
-  width: 700px;
+  width: 1000px;
   transition: width 0.4s ease-out;
  }
 
  .list-container.sorting {
-   width: 560px;
+   
  }
 
  .list-container .item {
@@ -53,6 +53,42 @@
    text-align: center;
    vertical-align: middle;
    color: #ffffff;
+ }
+
+ .list-container .holder {
+   width: 100px;
+   height: 100px;
+   border-radius: 100%;
+   float: left;
+   list-style: none;
+   margin: 0 20px;
+
+   line-height: 100px;
+   text-align: center;
+   vertical-align: middle;
+   color: #ffffff;
+ }
+
+ .list-container .holder.placeholder {
+   opacity: 0;
+   transition: all 0.2s ease-in-out;
+ }
+
+ .list-container .holder.placeholder.fadeout {
+   width: 0;
+   height: 0;
+ }
+
+ .list-container .holder.emptyholder {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    transition: all 0.2s ease-in-out;
+ }
+
+ .list-container .holder.emptyholder.fadein {
+   width: 100px;
+   height: 100px;
  }
  
 
@@ -80,16 +116,92 @@
     var target = event.srcElement || event.target;
     var width = target.clientWidth;
     var height = target.clientHeight;
-    target.style.position = 'fixed';
-    addClassToElement(list, 'sorting');
-    setTimeout(function(){
-      removeClassFromElement(list, 'sorting');
-    }, 400);
+    var targetOriginalIndex = Array.prototype.indexOf.call(document.querySelectorAll('.list-container .item'), target);
+    var targetPosition = -1;
+    
+    var placeholder = target.cloneNode(true);
+    removeClassFromElement(placeholder, 'item');
+    addClassToElement(placeholder, 'holder placeholder');
+    var emptyholder = target.cloneNode(true);
+    removeClassFromElement(emptyholder, 'item');
+    addClassToElement(emptyholder, 'holder emptyholder');
 
+    target.parentNode.insertBefore(placeholder, target);
+
+    target.style.position = 'fixed';
+
+    var timerForInsertEmptyHolder = null;
+    var timerForInsertEmptyHolderTimeout = 500;
     var followMouseMove = function(event){
       //The x and y is the cursor coordinates that is the middle of the item
       target.style.left = (event.x - width/2) + 'px';
       target.style.top = (event.y - height/2) + 'px';
+
+      //Need to refresh items
+      var items = document.querySelectorAll('.list-container .item');
+
+      var otherItems = Array.prototype.filter.call(items, function(item){
+        return item !== target;
+      });
+
+      //The left boundary of the item
+      //A fixed(postion:fixed) element has no valid getBoundingClientRect result, actually they are all zero.
+      var left = parseInt(target.style.left);
+      var middleOfTarget = left + parseInt(target.clientWidth)/2;
+
+      for(var i = 0; i < otherItems.length; i++){
+        var item = otherItems[i];
+        var rectangle = item.getBoundingClientRect();
+        
+        //Don't add and remove empty from the tail
+        if(i === (otherItems.length - 1)){
+          //Stop the timer for delay add empty holder
+          timerForInsertEmptyHolder || clearTimeout(timerForInsertEmptyHolder);
+          if(targetPosition !== items.length){
+            targetPosition = items.length;
+            removeClassFromElement(emptyholder, 'fadein');
+            emptyholder.parentNode && emptyholder.parentNode.removeChild(emptyholder);
+          }
+          break;
+        }
+
+        //Add the empty holder in the header
+        if(i === 0 && left < rectangle.left){
+          timerForInsertEmptyHolder || clearTimeout(timerForInsertEmptyHolder);
+          if(targetPosition !== 0){
+            targetPosition = 0;
+
+            timerForInsertEmptyHolder = setTimeout(function(){
+              removeClassFromElement(emptyholder, 'fadein');
+              listContainer.insertBefore(emptyholder, item);
+              addClassToElement(emptyholder, 'fadein');
+            }, timerForInsertEmptyHolderTimeout);
+
+          }
+          break;
+        }
+
+        var nextItem = otherItems[i + 1];
+        var nextRectangle = nextItem.getBoundingClientRect();
+        var middleOfNext = nextRectangle.left + nextRectangle.width/2;
+        var middleOfCurrent = rectangle.left + rectangle.width/2;
+
+        if(middleOfTarget >= middleOfCurrent && middleOfTarget <= middleOfNext && targetOriginalIndex !== (i + 1) /*Don't add empty holder if a place holder is here*/){
+          timerForInsertEmptyHolder || clearTimeout(timerForInsertEmptyHolder);
+          if(targetPosition !== (i + 1)){
+            targetPosition = i + 1;
+
+            timerForInsertEmptyHolder = setTimeout(function(){
+              removeClassFromElement(emptyholder, 'fadein');
+              listContainer.insertBefore(emptyholder, nextItem);
+              addClassToElement(emptyholder, 'fadein');
+            }, timerForInsertEmptyHolderTimeout);
+          }
+          break;
+        }
+      }
+      
+
     }
 
     var removeFollowMouse = function(){
@@ -137,12 +249,18 @@
         var middleOfCurrent = rectangle.left + rectangle.width/2;
 
         if(middleOfTarget >= middleOfCurrent && middleOfTarget <= middleOfNext){
-          listContainer.insertBefore(copy, nextItem);
+          listContainer.insertBefore(copy, nextItem);;
           break;
         }
       }
 
       target.parentNode.removeChild(target);
+      emptyholder.parentNode && emptyholder.parentNode.removeChild(emptyholder);
+      addClassToElement(placeholder, 'fadeout');
+      setTimeout(function(){
+        placeholder.parentNode.removeChild(placeholder);
+      }, 250)
+      
     }
 
     followMouseMove = addListener(document, 'mousemove', followMouseMove);
